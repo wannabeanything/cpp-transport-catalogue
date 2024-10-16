@@ -1,25 +1,28 @@
 #include "stat_reader.h"
 #include <iomanip>
 #include <iostream>
+#include <string>
+
+
+
 
 void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) {
     if (request.substr(0, 3) == "Bus") {
+        
         request = request.substr(4);
         auto bus_info = transport_catalogue.GetBusInfo(std::string(request));
 
         if (bus_info) {
-            int stops_on_route, unique_stops;
-            double route_length;
-            std::tie(stops_on_route, unique_stops, route_length) = *bus_info;
-
+            
             output << "Bus " << request << ": "
-                   << stops_on_route << " stops on route, "
-                   << unique_stops << " unique stops, "
-                   << route_length << " route length\n";
+                   << bus_info->stop_count << " stops on route, "
+                   << bus_info->unique_stops << " unique stops, "
+                   << bus_info->route_length << " route length\n";
         } else {
             output << "Bus " << request << ": not found\n";
         }
     } else if (request.substr(0, 4) == "Stop") {
+        
         request = request.substr(5);
         auto buses = transport_catalogue.GetBusesForStop(std::string(request));
 
@@ -34,5 +37,18 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
             }
             output << "\n";
         }
+    }
+}
+
+
+void ProcessStatRequests(TransportCatalogue& catalogue) {
+    int stat_request_count;
+    std::cin >> stat_request_count >> std::ws;  
+
+    for (int i = 0; i < stat_request_count; ++i) {
+        std::string line;
+        std::getline(std::cin, line);  
+
+        ParseAndPrintStat(catalogue, line, std::cout);  
     }
 }

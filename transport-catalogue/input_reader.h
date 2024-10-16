@@ -23,6 +23,7 @@ struct CommandDescription {
 
 class InputReader {
 public:
+    void ProcessInput(TransportCatalogue& catalogue);
     /**
      * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
      */

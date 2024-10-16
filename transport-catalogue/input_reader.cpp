@@ -1,8 +1,24 @@
 #include "input_reader.h"
 
+#include <iostream>
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+
+
+void InputReader::ProcessInput(TransportCatalogue& catalogue) {
+    int base_request_count;
+    std::cin >> base_request_count >> std::ws;  
+
+    for (int i = 0; i < base_request_count; ++i) {
+        std::string line;
+        std::getline(std::cin, line);  
+        ParseLine(line);
+    }
+    
+    ApplyCommands(catalogue);  
+}
+
 
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)

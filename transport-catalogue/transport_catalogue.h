@@ -18,6 +18,12 @@ struct Bus {
     bool is_roundtrip;  // true для кольцевого маршрута, false для обычного
 };
 
+struct BusInfo {
+    int stop_count;       
+    int unique_stops;     
+    double route_length;  
+};
+
 class TransportCatalogue {
 public:
     void AddStop(const std::string& name, double latitude, double longitude);
@@ -26,14 +32,16 @@ public:
     const Bus* FindBus(const std::string& name) const;
     const Stop* FindStop(const std::string& name) const;
 
-    // Метод для получения информации о маршруте
-    std::optional<std::tuple<int, int, double>> GetBusInfo(const std::string& bus_name) const;
-    std::optional<std::vector<std::string>> GetBusesForStop(const std::string& stop_name) const;
+    std::optional<BusInfo> GetBusInfo(const std::string& bus_name) const;
+    std::optional<std::unordered_set<std::string_view>> GetBusesForStop(const std::string& stop_name) const;
 
 private:
-    std::deque<Stop> stops_;  // Дек для хранения остановок
-    std::deque<Bus> buses_;   // Дек для хранения маршрутов
+    std::deque<Stop> stops_;
+    std::deque<Bus> buses_;
 
-    std::unordered_map<std::string_view, const Stop*> stopname_to_stop_;  // Индекс остановок по названию
-    std::unordered_map<std::string_view, const Bus*> busname_to_bus_;     // Индекс маршрутов по названию
+    std::unordered_map<std::string_view, const Stop*> stopname_to_stop_;
+    std::unordered_map<std::string_view, const Bus*> busname_to_bus_;
+
+    
+    std::unordered_map<std::string, std::unordered_set<std::string_view>> bus_to_stops_;
 };
