@@ -6,11 +6,31 @@
 #include <tuple>
 #include <cassert>
 #include <set>
-
+#include <iostream>
 void TransportCatalogue::AddStop(const std::string& name, double latitude, double longitude) {
     stops_.emplace_back(Stop{name, latitude, longitude});
     stopname_to_stop_[stops_.back().name] = &stops_.back();
 }
+
+void TransportCatalogue::SetDistancesForStop(const std::string& stop_name, const std::unordered_map<std::string, int>& distances) {
+    const Stop* from_stop = FindStop(stop_name);
+    
+    if (from_stop) {
+        for (const auto& [to_stop_name, distance] : distances) {
+            const Stop* to_stop = FindStop(to_stop_name);
+            if (to_stop) {
+                distance_map_[{from_stop, to_stop}] = distance;
+
+                
+                if (distance_map_.find({to_stop, from_stop}) == distance_map_.end()) {
+                    distance_map_[{to_stop, from_stop}] = distance;  
+                }
+            }
+        }
+    }
+}
+
+
 
 void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
     Bus bus{name, {}, is_roundtrip};
@@ -19,31 +39,28 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
         const Stop* stop = FindStop(stop_name);
         if (stop) {
             bus.stops.push_back(stop);
-            bus_to_stops_[name].insert(stop_name);
+            bus_to_stops_[name].insert(stop->name);
         }
     }
     
     buses_.push_back(bus);
     busname_to_bus_[name] = &buses_.back();
 }
-std::optional<std::unordered_set<std::string_view>> TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
+std::optional<std::set<std::string_view>> TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
     const Stop* stop = FindStop(stop_name);
-    if (!stop) {
+    if (!stop) {      
         return std::nullopt;  
     }
 
-    
-    std::unordered_set<std::string_view> buses;
+    std::set<std::string_view> buses; 
 
-   
     for (const auto& [bus_name, stops] : bus_to_stops_) {
         if (stops.find(stop_name) != stops.end()) {
-            buses.insert(bus_name);
+            buses.insert(bus_name);  
         }
     }
 
-    
-    return buses;
+    return buses;  
 }
 
 
@@ -59,44 +76,58 @@ const Stop* TransportCatalogue::FindStop(const std::string& name) const {
     return it != stopname_to_stop_.end() ? it->second : nullptr;
 }
 
+
+std::optional<double> TransportCatalogue::GetDistance(const Stop* from_stop, const Stop* to_stop) const {
+    if (!from_stop || !to_stop) {
+        return std::nullopt; 
+    }
+    auto it = distance_map_.find({from_stop, to_stop});
+    if (it != distance_map_.end()) {
+        return it->second; 
+    }
+    return std::nullopt; 
+}
+
+
 std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string& bus_name) const {
     const Bus* bus = FindBus(bus_name);
     if (!bus) {
         return std::nullopt;  
     }
 
-    
     int stop_count = bus->stops.size();
-
-    
     std::unordered_set<const Stop*> unique_stops(bus->stops.begin(), bus->stops.end());
     int unique_stop_count = unique_stops.size();
 
-    
     double route_length = 0.0;
+    double geo_distance = 0.0;
 
-    if (!bus->is_roundtrip) {
-        
-        for (size_t i = bus->stops.size() - 1; i > 0; --i) {
-            route_length += ComputeDistance(
-                {bus->stops[i]->latitude, bus->stops[i]->longitude}, 
-                {bus->stops[i - 1]->latitude, bus->stops[i - 1]->longitude}
-            );
-        }
-    } else {
-        
-        for (size_t i = 1; i < bus->stops.size(); ++i) {
-            route_length += ComputeDistance(
-                {bus->stops[i - 1]->latitude, bus->stops[i - 1]->longitude}, 
-                {bus->stops[i]->latitude, bus->stops[i]->longitude}
+    for (size_t i = 0; i < bus->stops.size(); ++i) {
+        const Stop* from_stop = bus->stops[i];
+        if (i + 1 < bus->stops.size()) {
+            const Stop* to_stop = bus->stops[i + 1];
+
+            
+            auto road_distance = GetDistance(from_stop, to_stop);
+            if (road_distance) {
+                route_length += *road_distance; 
+
+            }
+            geo_distance += ComputeDistance(
+                {from_stop->latitude, from_stop->longitude},
+                {to_stop->latitude, to_stop->longitude}
             );
         }
     }
 
-    
+    double curvature = (geo_distance > 0) ? (route_length / geo_distance) : std::nan("");
+
+
     return BusInfo{
         stop_count,        
         unique_stop_count, 
-        route_length       
+        route_length,      
+        curvature
     };
 }
+

@@ -1,28 +1,23 @@
 #include "stat_reader.h"
-#include <iomanip>
+#include <iomanip>  // For std::fixed and std::setprecision
 #include <iostream>
 #include <string>
 
-
-
-
 void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) {
     if (request.substr(0, 3) == "Bus") {
-        
         request = request.substr(4);
         auto bus_info = transport_catalogue.GetBusInfo(std::string(request));
 
         if (bus_info) {
-            
             output << "Bus " << request << ": "
                    << bus_info->stop_count << " stops on route, "
                    << bus_info->unique_stops << " unique stops, "
-                   << bus_info->route_length << " route length\n";
+                   << std::fixed  << std::setprecision(0)<< bus_info->route_length << " route length, "
+                   << std::defaultfloat << std::setprecision(6)<< bus_info->curvature << " curvature" << std::endl;
         } else {
             output << "Bus " << request << ": not found\n";
         }
     } else if (request.substr(0, 4) == "Stop") {
-        
         request = request.substr(5);
         auto buses = transport_catalogue.GetBusesForStop(std::string(request));
 
@@ -39,7 +34,6 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
         }
     }
 }
-
 
 void ProcessStatRequests(TransportCatalogue& catalogue) {
     int stat_request_count;

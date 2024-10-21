@@ -117,13 +117,56 @@ void InputReader::ParseLine(std::string_view line) {
         commands_.push_back(std::move(command_description));
     }
 }
+std::unordered_map<std::string, int> ParseStopDistances(std::string_view description) {
+    std::unordered_map<std::string, int> distances;
+
+    // Find the position of the first and second commas
+    auto first_comma = description.find(',');
+    if (first_comma == std::string_view::npos) {
+        return distances;  // Return an empty map if no distances are found
+    }
+    
+    auto second_comma = description.find(',', first_comma + 1);
+    if (second_comma == std::string_view::npos) {
+        return distances;  // Return an empty map if no distances are found
+    }
+
+    // Get the part of the description after the second comma
+    std::string_view distance_str = description.substr(second_comma + 1);
+
+    // Split by comma to get individual distances
+    auto distance_tokens = Split(distance_str, ',');
+    for (const auto& token : distance_tokens) {
+        auto to_pos = token.find("m to ");
+        if (to_pos != std::string_view::npos) {
+            int distance = std::stoi(std::string(token.substr(0, to_pos)));  // Parse the distance
+            std::string_view stop_name = Trim(token.substr(to_pos + 5));  // Get the stop name after "m to "
+            distances[std::string(stop_name)] = distance;  // Store the distance in the map
+        }
+    }
+
+    return distances;
+}
+
 
 void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
-    // Adding stops
+    // First pass: Adding stops with coordinates
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
             auto coords = ParseCoordinates(command.description);
+
+            // Add stop with coordinates only
             catalogue.AddStop(command.id, coords.lat, coords.lng);
+        }
+    }
+
+    // Second pass: Adding distances between stops
+    for (const auto& command : commands_) {
+        if (command.command == "Stop") {
+            auto distances = ParseStopDistances(command.description); // Parse distances after stops are added
+
+            // Set distances for the added stop
+            catalogue.SetDistancesForStop(command.id, distances);
         }
     }
 

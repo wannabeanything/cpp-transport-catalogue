@@ -1,5 +1,5 @@
 #pragma once
-
+#include <set>
 #include <deque>
 #include <string>
 #include <unordered_map>
@@ -21,19 +21,28 @@ struct Bus {
 struct BusInfo {
     int stop_count;       
     int unique_stops;     
-    double route_length;  
+    double route_length;
+    double curvature;
 };
 
+struct PairHash {
+    template <class T1, class T2>
+    std::size_t operator() (const std::pair<T1, T2>& pair) const {
+        auto hash1 = std::hash<T1>{}(pair.first);
+        auto hash2 = std::hash<T2>{}(pair.second);
+        return hash1 ^ hash2; 
+    }
+};
 class TransportCatalogue {
 public:
     void AddStop(const std::string& name, double latitude, double longitude);
     void AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip);
-
+    void SetDistancesForStop(const std::string& stop_name, const std::unordered_map<std::string, int>& distances);
     const Bus* FindBus(const std::string& name) const;
     const Stop* FindStop(const std::string& name) const;
-
+    std::optional<double> GetDistance(const Stop* from_stop, const Stop* to_stop) const;
     std::optional<BusInfo> GetBusInfo(const std::string& bus_name) const;
-    std::optional<std::unordered_set<std::string_view>> GetBusesForStop(const std::string& stop_name) const;
+    std::optional<std::set<std::string_view>> GetBusesForStop(const std::string& stop_name) const;
 
 private:
     std::deque<Stop> stops_;
@@ -44,4 +53,5 @@ private:
 
     
     std::unordered_map<std::string, std::unordered_set<std::string_view>> bus_to_stops_;
+    std::unordered_map<std::pair<const Stop*, const Stop*>, double, PairHash> distance_map_;
 };
