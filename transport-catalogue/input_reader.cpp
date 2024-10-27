@@ -6,13 +6,13 @@
 #include <iterator>
 
 
-void InputReader::ProcessInput(TransportCatalogue& catalogue) {
+void InputReader::ProcessInput(std::istream& input, TransportCatalogue& catalogue){
     int base_request_count;
-    std::cin >> base_request_count >> std::ws;  
+    input >> base_request_count >> std::ws;  
 
     for (int i = 0; i < base_request_count; ++i) {
         std::string line;
-        std::getline(std::cin, line);  
+        std::getline(input, line);  
         ParseLine(line);
     }
     
@@ -117,8 +117,8 @@ void InputReader::ParseLine(std::string_view line) {
         commands_.push_back(std::move(command_description));
     }
 }
-std::unordered_map<std::string, int> ParseStopDistances(std::string_view description) {
-    std::unordered_map<std::string, int> distances;
+std::unordered_map<std::string, double> ParseStopDistances(std::string_view description) {
+    std::unordered_map<std::string, double> distances;
 
     // Find the position of the first and second commas
     auto first_comma = description.find(',');
@@ -139,7 +139,7 @@ std::unordered_map<std::string, int> ParseStopDistances(std::string_view descrip
     for (const auto& token : distance_tokens) {
         auto to_pos = token.find("m to ");
         if (to_pos != std::string_view::npos) {
-            int distance = std::stoi(std::string(token.substr(0, to_pos)));  // Parse the distance
+            double distance = std::stod(std::string(token.substr(0, to_pos)));  // Parse the distance as double
             std::string_view stop_name = Trim(token.substr(to_pos + 5));  // Get the stop name after "m to "
             distances[std::string(stop_name)] = distance;  // Store the distance in the map
         }
@@ -163,10 +163,10 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
     // Second pass: Adding distances between stops
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
-            auto distances = ParseStopDistances(command.description); // Parse distances after stops are added
+            auto distances = ParseStopDistances(command.description); // Parse distances as doubles
 
-            // Set distances for the added stop
-            catalogue.SetDistancesForStop(command.id, distances);
+            // Use AddDistance to add multiple distances for the current stop
+            catalogue.AddDistance(command.id, distances);
         }
     }
 
@@ -187,3 +187,5 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
         }
     }
 }
+
+

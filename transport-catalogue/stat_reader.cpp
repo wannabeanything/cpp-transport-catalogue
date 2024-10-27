@@ -12,8 +12,8 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
             output << "Bus " << request << ": "
                    << bus_info->stop_count << " stops on route, "
                    << bus_info->unique_stops << " unique stops, "
-                   << std::fixed  << std::setprecision(0)<< bus_info->route_length << " route length, "
-                   << std::defaultfloat << std::setprecision(6)<< bus_info->curvature << " curvature" << std::endl;
+                   << std::fixed  << std::setprecision(0) << bus_info->route_length << " route length, "
+                   << std::defaultfloat << std::setprecision(6) << bus_info->curvature << " curvature" << std::endl;
         } else {
             output << "Bus " << request << ": not found\n";
         }
@@ -35,14 +35,14 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     }
 }
 
-void ProcessStatRequests(TransportCatalogue& catalogue) {
+void ProcessStatRequests(TransportCatalogue& catalogue, std::istream& input, std::ostream& output) {
     int stat_request_count;
-    std::cin >> stat_request_count >> std::ws;  
+    input >> stat_request_count >> std::ws;  
 
     for (int i = 0; i < stat_request_count; ++i) {
         std::string line;
-        std::getline(std::cin, line);  
+        std::getline(input, line);  
 
-        ParseAndPrintStat(catalogue, line, std::cout);  
+        ParseAndPrintStat(catalogue, line, output);  
     }
 }

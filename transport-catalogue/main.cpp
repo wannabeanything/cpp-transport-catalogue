@@ -10,6 +10,6 @@ int main() {
     TransportCatalogue catalogue;
 
     InputReader reader;
-    reader.ProcessInput(catalogue);
-    ProcessStatRequests(catalogue);
+    reader.ProcessInput(cin, catalogue);
+    ProcessStatRequests(catalogue, cin, cout);
 }
