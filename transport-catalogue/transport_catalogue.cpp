@@ -12,56 +12,48 @@ void TransportCatalogue::AddStop(const std::string& name, double latitude, doubl
     stopname_to_stop_[stops_.back().name] = &stops_.back();
 }
 
-void TransportCatalogue::SetDistancesForStop(const std::string& stop_name, const std::unordered_map<std::string, int>& distances) {
-    const Stop* from_stop = FindStop(stop_name);
-    
-    if (from_stop) {
-        for (const auto& [to_stop_name, distance] : distances) {
-            const Stop* to_stop = FindStop(to_stop_name);
-            if (to_stop) {
-                distance_map_[{from_stop, to_stop}] = distance;
+void TransportCatalogue::AddDistance(const std::string& from_stop_name, const std::string& to_stop_name, int distance) {
+    temp_distances_.emplace_back(from_stop_name, to_stop_name, distance);
+}
+void TransportCatalogue::SetDistance() {
+    for (const auto& [from_name, to_name, distance] : temp_distances_) {
+        const Stop* from_stop = FindStop(from_name);
+        const Stop* to_stop = FindStop(to_name);
 
-                
-                if (distance_map_.find({to_stop, from_stop}) == distance_map_.end()) {
-                    distance_map_[{to_stop, from_stop}] = distance;  
-                }
+        if (from_stop && to_stop) {
+            distance_map_[{from_stop, to_stop}] = distance;
+
+            if (distance_map_.find({to_stop, from_stop}) == distance_map_.end()) {
+                distance_map_[{to_stop, from_stop}] = distance;
             }
         }
     }
+    temp_distances_.clear();
 }
 
 
 
 void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
     Bus bus{name, {}, is_roundtrip};
-    
+
     for (const auto& stop_name : stop_names) {
         const Stop* stop = FindStop(stop_name);
         if (stop) {
             bus.stops.push_back(stop);
             bus_to_stops_[name].insert(stop->name);
+            stop_to_buses_[stop->name].insert(name);  
         }
     }
-    
+
     buses_.push_back(bus);
     busname_to_bus_[name] = &buses_.back();
 }
-std::optional<std::set<std::string_view>> TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
-    const Stop* stop = FindStop(stop_name);
-    if (!stop) {      
-        return std::nullopt;  
-    }
 
-    std::set<std::string_view> buses; 
-
-    for (const auto& [bus_name, stops] : bus_to_stops_) {
-        if (stops.find(stop_name) != stops.end()) {
-            buses.insert(bus_name);  
-        }
-    }
-
-    return buses;  
+const std::set<std::string_view>* TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
+    auto it = stop_to_buses_.find(stop_name);
+    return it != stop_to_buses_.end() ? &it->second : nullptr;
 }
+
 
 
 

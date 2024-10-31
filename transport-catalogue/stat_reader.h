@@ -8,4 +8,4 @@
 void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request,
                        std::ostream& output);
 
-void ProcessStatRequests(TransportCatalogue& catalogue);
+void ProcessStatRequests(TransportCatalogue& catalogue, std::istream& input, std::ostream& output);

@@ -23,7 +23,7 @@ struct CommandDescription {
 
 class InputReader {
 public:
-    void ProcessInput(TransportCatalogue& catalogue);
+    
     /**
      * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
      */
@@ -33,7 +33,7 @@ public:
      * Наполняет данными транспортный справочник, используя команды из commands_
      */
     void ApplyCommands(TransportCatalogue& catalogue) const;
-
+    void ProcessInput(std::istream& input, TransportCatalogue& catalogue);
 private:
     std::vector<CommandDescription> commands_;
 };

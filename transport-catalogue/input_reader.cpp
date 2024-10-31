@@ -6,17 +6,16 @@
 #include <iterator>
 
 
-void InputReader::ProcessInput(TransportCatalogue& catalogue) {
+void InputReader::ProcessInput(std::istream& input, TransportCatalogue& catalogue){
     int base_request_count;
-    std::cin >> base_request_count >> std::ws;  
+    input >> base_request_count >> std::ws;  
 
     for (int i = 0; i < base_request_count; ++i) {
         std::string line;
-        std::getline(std::cin, line);  
+        std::getline(input, line);  
         ParseLine(line);
     }
-    
-    ApplyCommands(catalogue);  
+    ApplyCommands(catalogue);
 }
 
 
@@ -154,8 +153,6 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
             auto coords = ParseCoordinates(command.description);
-
-            // Add stop with coordinates only
             catalogue.AddStop(command.id, coords.lat, coords.lng);
         }
     }
@@ -163,12 +160,15 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
     // Second pass: Adding distances between stops
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
-            auto distances = ParseStopDistances(command.description); // Parse distances after stops are added
-
-            // Set distances for the added stop
-            catalogue.SetDistancesForStop(command.id, distances);
+            auto distances = ParseStopDistances(command.description);
+            for (const auto& [to_stop_name, distance] : distances) {
+                catalogue.AddDistance(command.id, to_stop_name, distance);
+            }
         }
     }
+
+    // Finalizing distances after adding all stops
+    catalogue.SetDistance();
 
     // Adding buses
     for (const auto& command : commands_) {
@@ -176,13 +176,7 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
             bool is_roundtrip = command.description.find('>') != std::string::npos;
             auto stops_view = ParseRoute(command.description);
 
-            // Convert std::vector<std::string_view> to std::vector<std::string>
-            std::vector<std::string> stops;
-            stops.reserve(stops_view.size());
-            for (const auto& stop_view : stops_view) {
-                stops.push_back(std::string(stop_view));
-            }
-
+            std::vector<std::string> stops(stops_view.begin(), stops_view.end());
             catalogue.AddBus(command.id, stops, is_roundtrip);
         }
     }
