@@ -12,6 +12,7 @@ void TransportCatalogue::AddStop(const std::string& name, double latitude, doubl
     stopname_to_stop_[stops_.back().name] = &stops_.back();
 }
 
+<<<<<<< HEAD
 void TransportCatalogue::AddDistance(const std::string& from_stop_name, const std::string& to_stop_name, int distance) {
     temp_distances_.emplace_back(from_stop_name, to_stop_name, distance);
 }
@@ -26,12 +27,32 @@ void TransportCatalogue::SetDistance() {
             if (distance_map_.find({to_stop, from_stop}) == distance_map_.end()) {
                 distance_map_[{to_stop, from_stop}] = distance;
             }
+=======
+void TransportCatalogue::SetDistance(const std::string& from_stop_name, const std::string& to_stop_name, double distance) {
+    const Stop* from_stop = FindStop(from_stop_name);
+    const Stop* to_stop = FindStop(to_stop_name);
+
+    if (to_stop) { 
+        distance_map_[{from_stop, to_stop}] = distance; 
+ 
+                 
+        if (distance_map_.find({to_stop, from_stop}) == distance_map_.end()) { 
+                distance_map_[{to_stop, from_stop}] = distance;   
+            } 
+        }
+}
+
+void TransportCatalogue::AddDistance(const std::string& stop_name, const std::unordered_map<std::string, double>& distances) {
+    const Stop* from_stop = FindStop(stop_name);
+
+    if (from_stop) {
+        for (const auto& [to_stop_name, distance] : distances) {
+            SetDistance(from_stop->name, to_stop_name, distance);
+>>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
         }
     }
     temp_distances_.clear();
 }
-
-
 
 void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
     Bus bus{name, {}, is_roundtrip};
@@ -40,8 +61,12 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
         const Stop* stop = FindStop(stop_name);
         if (stop) {
             bus.stops.push_back(stop);
+<<<<<<< HEAD
             bus_to_stops_[name].insert(stop->name);
             stop_to_buses_[stop->name].insert(name);  
+=======
+            bus_to_stops_map_[name].insert(stop->name);  // Use only bus_to_stops_map_
+>>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
         }
     }
 
@@ -49,9 +74,21 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
     busname_to_bus_[name] = &buses_.back();
 }
 
+<<<<<<< HEAD
 const std::set<std::string_view>* TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
     auto it = stop_to_buses_.find(stop_name);
     return it != stop_to_buses_.end() ? &it->second : nullptr;
+=======
+    std::set<std::string_view> buses; 
+
+    for (const auto& [bus_name, stops] : bus_to_stops_map_) {
+        if (stops.find(stop_name) != stops.end()) {
+            buses.insert(bus_name);  
+        }
+    }
+
+    return buses;  
+>>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
 }
 
 

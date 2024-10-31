@@ -116,8 +116,8 @@ void InputReader::ParseLine(std::string_view line) {
         commands_.push_back(std::move(command_description));
     }
 }
-std::unordered_map<std::string, int> ParseStopDistances(std::string_view description) {
-    std::unordered_map<std::string, int> distances;
+std::unordered_map<std::string, double> ParseStopDistances(std::string_view description) {
+    std::unordered_map<std::string, double> distances;
 
     // Find the position of the first and second commas
     auto first_comma = description.find(',');
@@ -138,7 +138,7 @@ std::unordered_map<std::string, int> ParseStopDistances(std::string_view descrip
     for (const auto& token : distance_tokens) {
         auto to_pos = token.find("m to ");
         if (to_pos != std::string_view::npos) {
-            int distance = std::stoi(std::string(token.substr(0, to_pos)));  // Parse the distance
+            double distance = std::stod(std::string(token.substr(0, to_pos)));  // Parse the distance as double
             std::string_view stop_name = Trim(token.substr(to_pos + 5));  // Get the stop name after "m to "
             distances[std::string(stop_name)] = distance;  // Store the distance in the map
         }
@@ -160,10 +160,17 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
     // Second pass: Adding distances between stops
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
+<<<<<<< HEAD
             auto distances = ParseStopDistances(command.description);
             for (const auto& [to_stop_name, distance] : distances) {
                 catalogue.AddDistance(command.id, to_stop_name, distance);
             }
+=======
+            auto distances = ParseStopDistances(command.description); // Parse distances as doubles
+
+            // Use AddDistance to add multiple distances for the current stop
+            catalogue.AddDistance(command.id, distances);
+>>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
         }
     }
 
@@ -181,3 +188,5 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
         }
     }
 }
+
+
