@@ -37,13 +37,8 @@ class TransportCatalogue {
 public:
     void AddStop(const std::string& name, double latitude, double longitude);
     void AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip);
-<<<<<<< HEAD
     void AddDistance(const std::string& from_stop_name, const std::string& to_stop_name, int distance);
     void SetDistance();
-=======
-    void SetDistance(const std::string& from_stop_name, const std::string& to_stop_name, double distance);
-    void AddDistance(const std::string& stop_name, const std::unordered_map<std::string, double>& distances);
->>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
     const Bus* FindBus(const std::string& name) const;
     const Stop* FindStop(const std::string& name) const;
     std::optional<double> GetDistance(const Stop* from_stop, const Stop* to_stop) const;
@@ -57,13 +52,9 @@ private:
     std::unordered_map<std::string_view, const Stop*> stopname_to_stop_;
     std::unordered_map<std::string_view, const Bus*> busname_to_bus_;
 
-<<<<<<< HEAD
     std::unordered_map<std::string_view, std::set<std::string_view>> stop_to_buses_;
 
     std::unordered_map<std::string, std::unordered_set<std::string_view>> bus_to_stops_;
-=======
-    std::unordered_map<std::string_view, std::unordered_set<std::string_view>> bus_to_stops_map_;
->>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
     std::unordered_map<std::pair<const Stop*, const Stop*>, double, PairHash> distance_map_;
     std::vector<std::tuple<std::string, std::string, int>> temp_distances_;
 };

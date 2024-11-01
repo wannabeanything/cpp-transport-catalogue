@@ -160,17 +160,10 @@ void InputReader::ApplyCommands(TransportCatalogue& catalogue) const {
     // Second pass: Adding distances between stops
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
-<<<<<<< HEAD
             auto distances = ParseStopDistances(command.description);
             for (const auto& [to_stop_name, distance] : distances) {
                 catalogue.AddDistance(command.id, to_stop_name, distance);
             }
-=======
-            auto distances = ParseStopDistances(command.description); // Parse distances as doubles
-
-            // Use AddDistance to add multiple distances for the current stop
-            catalogue.AddDistance(command.id, distances);
->>>>>>> 7d73d6dd51df28cf3b6ad2b91aa8d9250378e57c
         }
     }
 
