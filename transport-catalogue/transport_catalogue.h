@@ -44,7 +44,8 @@ public:
     std::optional<double> GetDistance(const Stop* from_stop, const Stop* to_stop) const;
     std::optional<BusInfo> GetBusInfo(const std::string& bus_name) const;
     const std::set<std::string_view>* GetBusesForStop(const std::string& stop_name) const;
-
+    const std::deque<Bus> GetSortedRoutes() const;
+    const std::vector<const Stop*> GetSortedStops() const;
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
