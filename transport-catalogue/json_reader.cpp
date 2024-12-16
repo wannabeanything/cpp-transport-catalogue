@@ -117,10 +117,6 @@ json::Node StatRequestsHandler::ProcessStopRequest(int request_id, const std::st
     };
 }
 json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
-    map_.DrawLines();
-    map_.NameRoutes();
-    map_.CircleStops();
-    map_.NameStops();
     std::ostringstream oss;
     map_.DrawMap(oss);
     

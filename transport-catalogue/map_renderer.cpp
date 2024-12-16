@@ -82,7 +82,11 @@ void MapRenderer::FillMapRenderer(const json::Node& render_settings){
     rsh_.Parse(render_settings);
     projected_coords_ = MakeSphereProjector();
 }
-void MapRenderer::DrawMap(std::ostream& out) const{
+void MapRenderer::DrawMap(std::ostream& out) {
+    DrawLines();
+    DrawRoutesNames();
+    DrawStopsCircles();
+    DrawStopsNames();
     final_drawing_.Render(out);
 }
 
@@ -107,7 +111,6 @@ std::vector<geo::Coordinates> MapRenderer::GetUpdatedCoords(std::vector<const St
     }
     return result;
 }
-//Правильно so far
 void MapRenderer::DrawLines(){
     svg::Document doc;
     const auto sorted_routes = tc_.GetSortedRoutes();
@@ -134,7 +137,7 @@ void MapRenderer::DrawLines(){
     
 }
 
-void MapRenderer::NameRoutes(){
+void MapRenderer::DrawRoutesNames(){
     svg::Text buses_name, buses_name_underlayer;
     buses_name = rsh_.GetBusNamesSettings();
     buses_name_underlayer = rsh_.GetBusNamesUnderlayerSettings();
@@ -173,8 +176,7 @@ void MapRenderer::NameRoutes(){
     }
     
 }
-//правильно so far 
-void MapRenderer::CircleStops(){
+void MapRenderer::DrawStopsCircles(){
     svg::Circle circle = rsh_.GetStopsSettings();
     circle.SetFillColor("white");
     std::vector<geo::Coordinates> updated_coords = GetUpdatedCoords(tc_.GetSortedStops(), projected_coords_);
@@ -183,8 +185,8 @@ void MapRenderer::CircleStops(){
         final_drawing_.Add(circle);
     }
 }
-//Правильно so far
-void MapRenderer::NameStops(){
+
+void MapRenderer::DrawStopsNames(){
     svg::Text stops_name, stops_name_underlayer;
     stops_name = rsh_.GetStopNamesSettings();
     stops_name_underlayer = rsh_.GetStopNameUnderlayerSetting();

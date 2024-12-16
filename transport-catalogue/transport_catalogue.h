@@ -1,29 +1,12 @@
 #pragma once
+#include "domain.h"
+
 #include <set>
 #include <deque>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 #include <optional>
-struct Stop {
-    std::string name;
-    double latitude;
-    double longitude;
-};
 
-struct Bus {
-    std::string name;
-    std::vector<const Stop*> stops;
-    bool is_roundtrip;  // true для кольцевого маршрута, false для обычного
-};
-
-struct BusInfo {
-    int stop_count;       
-    int unique_stops;     
-    double route_length;
-    double curvature;
-};
 
 struct PairHash {
     template <class T1, class T2>

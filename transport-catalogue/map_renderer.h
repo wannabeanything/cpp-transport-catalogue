@@ -143,16 +143,13 @@ class MapRenderer{
 public:
     MapRenderer(TransportCatalogue& catalogue):tc_(catalogue){}
     void FillMapRenderer(const json::Node& render_settings);
-    void DrawMap(std::ostream& out) const;
-    //1 Ломанные
-    void DrawLines();
-    //2 Названия маршрутов
-    void NameRoutes();
-    //3 Круги(остановки)
-    void CircleStops();
-    //4 Названия остановок
-    void NameStops(); 
+    void DrawMap(std::ostream& out);
+
 private:
+    void DrawLines();
+    void DrawRoutesNames();
+    void DrawStopsCircles();
+    void DrawStopsNames(); 
     SphereProjector MakeSphereProjector() const;
     std::vector<geo::Coordinates> GetUpdatedCoords(std::vector<const Stop*> stops, SphereProjector proj) const;
     RenderSettingsHandler rsh_;
