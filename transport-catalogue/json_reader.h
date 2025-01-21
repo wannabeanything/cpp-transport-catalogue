@@ -1,6 +1,7 @@
 #pragma once
 #include "map_renderer.h"
 #include "transport_catalogue.h"
+#include "json_builder.h"
 #include <vector>
 #include <string>
 #include <unordered_map>

@@ -5,7 +5,7 @@
 
 int main() {
 
-    freopen("text.txt","r",stdin);
+    //freopen("text.txt","r",stdin);
     /*
     json::Document input_json = json::Load(std::cin);
     TransportCatalogue catalogue;

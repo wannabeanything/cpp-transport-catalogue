@@ -68,6 +68,7 @@ void StatRequestsHandler::InitializeMap(const json::Node& render_settings){
 json::Node StatRequestsHandler::ProcessBusRequest(int request_id, const std::string& bus_name) const{
     auto bus_info = catalogue_.GetBusInfo(bus_name);
     if (bus_info) {
+        /*
         return json::Node{
             std::map<std::string, json::Node>{
                 {"request_id", request_id},
@@ -77,55 +78,100 @@ json::Node StatRequestsHandler::ProcessBusRequest(int request_id, const std::str
                 {"curvature", bus_info->curvature}
             }
         };
+        */
+       return json::Builder{}.StartDict()
+       .Key("request_id").Value(request_id)
+       .Key("stop_count").Value(bus_info->stop_count)
+       .Key("unique_stop_count").Value(bus_info->unique_stops)
+       .Key("route_length").Value(bus_info->route_length)
+       .Key("curvature").Value(bus_info->curvature)
+       .EndDict().Build();
     } else {
+        /*
         return json::Node{
             std::map<std::string, json::Node>{
             {"request_id", request_id},
             {"error_message", "not found"s}}
-        };
+        };*/
+        return json::Builder{}.StartDict()
+        .Key("request_id").Value(request_id)
+        .Key("error_message").Value("not found")
+        .EndDict().Build();
     }
 }
 
 json::Node StatRequestsHandler::ProcessStopRequest(int request_id, const std::string& stop_name) const {
     const auto* buses_for_stop = catalogue_.GetBusesForStop(stop_name);
     if (buses_for_stop) {
+        /*
         json::Array ar;
         for (const auto bus_name : *buses_for_stop){
             ar.push_back(std::string(bus_name));
-        }
+        }*/
+        /*
         return json::Node{
             std::map<std::string, json::Node>{
                 {"buses", ar},
                 {"request_id", request_id}
             }
-        };
+        };*/
+        auto builder = json::Builder{};
+        builder.StartDict()
+        .Key("buses").StartArray();
+        for(const auto bus_name: *buses_for_stop){
+            builder.Value(std::string(bus_name));
+        }
+        return builder.EndArray()
+        .Key("request_id").Value(request_id)
+        .EndDict().Build();
+        /*
+        return json::Builder{}.StartDict()
+        .Key("buses").Value(ar)
+        .Key("request_id").Value(request_id)
+        .EndDict().Build();
+        */
     }
     else if(catalogue_.FindStop(stop_name)!=nullptr){
+        /*
         return json::Node{
             std::map<std::string, json::Node>{
                 {"buses", json::Node(json::Array())},
                 {"request_id", request_id}
             }
-        };
-    }
+        };*/
+        return json::Builder{}.StartDict()
+        .Key("buses").StartArray().EndArray()
+        .Key("request_id").Value(request_id)
+        .EndDict().Build();
 
+    }
+    /*
     return json::Node{
         std::map<std::string, json::Node>{
             {"request_id", request_id},
             {"error_message", "not found"s}
         }
-    };
+    };*/
+    return json::Builder{}.StartDict()
+    .Key("request_id").Value(request_id)
+    .Key("error_message").Value("not found")
+    .EndDict().Build();
 }
 json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
     std::ostringstream oss;
     map_.DrawMap(oss);
-    
+    /*
     return json::Node{
         std::map<std::string, json::Node>{
             {"map", oss.str()},
             {"request_id", request_id}
         }
-    };
+    };*/
+    
+    return json::Builder{}.StartDict()
+    .Key("map").Value(oss.str())
+    .Key("request_id").Value(request_id)
+    .EndDict().Build();
 }
 
 std::vector<json::Node> StatRequestsHandler::Process(){

@@ -125,4 +125,3 @@ void Document::Render(std::ostream& out) const {
 
 }  // namespace svg
 
-
