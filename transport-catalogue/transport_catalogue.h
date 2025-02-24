@@ -20,6 +20,10 @@ class TransportCatalogue {
 public:
     void AddStop(const std::string& name, double latitude, double longitude);
     void AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip);
+    void SetVelocityAndWaitTime(double velocity, double wait_time);
+    size_t GetStopsCount() const;
+    //const double GetVelocity()const;
+    double GetWaitTime()const;
     void AddDistance(const std::string& from_stop_name, const std::string& to_stop_name, int distance);
     void SetDistance();
     const Bus* FindBus(const std::string& name) const;
@@ -28,7 +32,16 @@ public:
     std::optional<BusInfo> GetBusInfo(const std::string& bus_name) const;
     const std::set<std::string_view>* GetBusesForStop(const std::string& stop_name) const;
     const std::deque<Bus> GetSortedRoutes() const;
+    const std::deque<Bus>& GetRoutes() const{
+        return buses_;
+    }
+    const std::deque<Stop>& GetStops()const{
+        return stops_;
+    }
     const std::vector<const Stop*> GetSortedStops() const;
+    bool StopIsUseless(const std::string& name)const;
+    
+    
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;

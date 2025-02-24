@@ -1,4 +1,5 @@
 #include "json_reader.h"
+#include "log_duration.h"
 #include <sstream>
 using namespace std::literals;
 
@@ -60,6 +61,12 @@ void StatRequestsHandler::Parse(const json::Node& stat_requests) {
         }
     }
 }
+void StatRequestsHandler::SetRoutingSettings(const json::Node& routing_settings){
+    double wait_time = routing_settings.AsMap().at("bus_wait_time").AsDouble();
+    double velocity = routing_settings.AsMap().at("bus_velocity").AsDouble();
+    catalogue_.SetVelocityAndWaitTime(velocity, wait_time);
+}
+
 void StatRequestsHandler::InitializeMap(const json::Node& render_settings){
     map_.FillMapRenderer(render_settings);
 }
@@ -157,6 +164,96 @@ json::Node StatRequestsHandler::ProcessStopRequest(int request_id, const std::st
     .Key("error_message").Value("not found")
     .EndDict().Build();
 }
+
+
+json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::string& from, const std::string& to)const{
+    if(catalogue_.StopIsUseless(from) || catalogue_.StopIsUseless(to)){
+        return json::Builder{}.StartDict()
+        .Key("request_id").Value(request_id)
+        .Key("error_message").Value("not found")
+        .EndDict().Build();
+    }
+    
+    if(from == to){
+        return json::Builder{}.StartDict()
+        .Key("request_id").Value(request_id)
+        .Key("total_time").Value(0)
+        .Key("items").StartArray().EndArray()
+        .EndDict()
+        .Build();
+    }
+    graph::VertexId fromId, toId;
+    const graph::DirectedWeightedGraph<double>& const_graph = ts_router_.GetGraph();
+    const auto& stops_number = ts_router_.GetStopsNumber();
+
+    /*
+    graph::VertexId departureId = std::distance(stop_names_.begin(),
+                        std::find(stop_names_.begin(), stop_names_.end(), stop_from->name));
+    
+    */
+    fromId = std::distance(stops_number.begin(),
+            std::find(stops_number.begin(), stops_number.end(), from));
+    toId = std::distance(stops_number.begin(),
+            std::find(stops_number.begin(), stops_number.end(), to));        
+            
+    //fromId = stops_number.at(from);
+    //toId = stops_number.at(to);
+
+    const auto& route = router_->BuildRoute(fromId, toId);
+
+    
+    if(route.has_value()){
+        double total_time = 0.0;
+        
+        
+        auto builder = json::Builder{};
+        builder.StartDict()
+        .Key("items").StartArray();
+        
+        for(const graph::EdgeId edgeId: route.value().edges){
+            
+            graph::Edge edge = const_graph.GetEdge(edgeId);
+            if(edge.span_count != 0){
+                
+                builder.StartDict()
+                .Key("bus").Value(edge.name)
+                .Key("span_count").Value(static_cast<int>(edge.span_count))
+                .Key("time").Value(edge.weight)
+                .Key("type").Value("Bus")
+                .EndDict();
+                
+            }
+            else{
+                
+                builder.StartDict()
+                .Key("stop_name").Value(edge.name)
+                .Key("time").Value(edge.weight)
+                .Key("type").Value("Wait")
+                .EndDict();
+                
+            }
+            
+            total_time+= edge.weight;
+            
+        }
+        
+        
+        return builder.EndArray()
+        .Key("request_id").Value(request_id)
+        .Key("total_time").Value(total_time)
+        .EndDict()
+        .Build();
+        
+    }
+    
+
+    return json::Builder{}.StartDict()
+        .Key("request_id").Value(request_id)
+        .Key("error_message").Value("not found")
+        .EndDict().Build();
+}
+
+
 json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
     std::ostringstream oss;
     map_.DrawMap(oss);
@@ -174,6 +271,12 @@ json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
     .EndDict().Build();
 }
 
+void StatRequestsHandler::BuildGraph(){
+    
+    ts_router_.BuildGraph(&catalogue_);
+    router_ = new graph::Router<double>(ts_router_.GetGraph());
+}
+
 std::vector<json::Node> StatRequestsHandler::Process(){
     std::vector<json::Node> responses;
 
@@ -185,11 +288,18 @@ std::vector<json::Node> StatRequestsHandler::Process(){
 
             if (type == "Bus") {
                 responses.push_back(ProcessBusRequest(request_id, request_map.at("name").AsString()));
+                
             } else if (type == "Stop") {
                 responses.push_back(ProcessStopRequest(request_id, request_map.at("name").AsString()));
+                
             }
             else if(type == "Map"){
                 responses.push_back(ProcessMapRequest(request_id));
+                
+            }
+            else if(type == "Route"){
+                responses.push_back(ProcessRouteRequest(request_id, request_map.at("from").AsString(), request_map.at("to").AsString()));
+                
             }
         }
     }
@@ -203,21 +313,21 @@ std::vector<json::Node> StatRequestsHandler::Process(){
 void RequestManager::ProcessInput(const json::Node& input) {
     const auto& input_map = input.AsMap();
 
-
+    
     base_requests_handler_.Parse(input_map.at("base_requests"));
     base_requests_handler_.Process();  
-
+    
     
     stat_requests_handler_.InitializeMap(input_map.at("render_settings"));
-
-
+    stat_requests_handler_.SetRoutingSettings(input_map.at("routing_settings"));
+    stat_requests_handler_.BuildGraph();
     stat_requests_handler_.Parse(input_map.at("stat_requests"));
 }
 
 json::Node RequestManager::GetResponses() {
     json::Array responses; 
     for (const auto& response : stat_requests_handler_.Process()) {
-        responses.push_back(response);
+        responses.emplace_back(response);
     }
     
 

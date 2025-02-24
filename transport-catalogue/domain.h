@@ -12,7 +12,9 @@ struct Stop {
 struct Bus {
     std::string name;
     std::vector<const Stop*> stops;
-    bool is_roundtrip;  // true для кольцевого маршрута, false для обычного
+    bool is_roundtrip;
+    double velocity = .0;
+    double wait_time = .0;
 };
 
 struct BusInfo {
@@ -21,3 +23,4 @@ struct BusInfo {
     double route_length;
     double curvature;
 };
+

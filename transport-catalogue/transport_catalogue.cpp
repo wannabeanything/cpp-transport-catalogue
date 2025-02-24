@@ -77,7 +77,19 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
     buses_.push_back(bus);
     busname_to_bus_[name] = &buses_.back();
 }
-
+void TransportCatalogue::SetVelocityAndWaitTime(double velocity,double wait_time){
+    for(Bus& bus: buses_){
+        bus.velocity = velocity * 1000 / 60;
+        bus.wait_time = wait_time;
+    }
+}
+/*
+const double TransportCatalogue::GetVelocity()const{
+    return buses_[0].velocity;
+}*/
+double TransportCatalogue::GetWaitTime()const{
+    return buses_[0].wait_time;
+}
 const std::set<std::string_view>* TransportCatalogue::GetBusesForStop(const std::string& stop_name) const {
     auto it = stop_to_buses_.find(stop_name);
     return it != stop_to_buses_.end() ? &it->second : nullptr;
@@ -157,6 +169,9 @@ const std::deque<Bus> TransportCatalogue::GetSortedRoutes() const{
     });
     return copied_deque;
 }
+size_t TransportCatalogue::GetStopsCount()const{
+    return stops_.size();
+}
 
 const std::vector<const Stop*> TransportCatalogue::GetSortedStops() const{
 
@@ -172,3 +187,12 @@ const std::vector<const Stop*> TransportCatalogue::GetSortedStops() const{
     return sorted_stops;
 
 }
+bool TransportCatalogue::StopIsUseless(const std::string& name) const{
+    for(const auto& [bus,stops]:bus_to_stops_){
+        if(stops.find(name)!= stops.end()){
+            return false;
+        }
+    }
+    return true;
+}
+

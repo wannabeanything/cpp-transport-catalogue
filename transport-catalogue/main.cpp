@@ -2,10 +2,10 @@
 #include <iostream>
 #include <stdio.h>
 
-
+#include "log_duration.h"
 int main() {
-
-    //freopen("text.txt","r",stdin);
+    //LOG_DURATION("CODE");
+    freopen("text.txt","r",stdin);
     /*
     json::Document input_json = json::Load(std::cin);
     TransportCatalogue catalogue;
@@ -19,6 +19,7 @@ int main() {
     mr.NameStops();
     mr.DrawMap();
     */
+    
     json::Document input_json = json::Load(std::cin);
     TransportCatalogue catalogue;
     RequestManager manager(catalogue);

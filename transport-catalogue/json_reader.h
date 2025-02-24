@@ -1,11 +1,11 @@
 #pragma once
 #include "map_renderer.h"
-#include "transport_catalogue.h"
 #include "json_builder.h"
+#include "router.h"
+#include "transport_router.h"
 #include <vector>
 #include <string>
 #include <unordered_map>
-
 
 class BaseRequestsHandler {
 public:
@@ -24,24 +24,27 @@ private:
 };
 
 
-
-
 class StatRequestsHandler {
 public:
     explicit StatRequestsHandler(TransportCatalogue& catalogue)
         : catalogue_(catalogue), map_(catalogue){}
 
     void Parse(const json::Node& stat_requests);
+    void SetRoutingSettings (const json::Node& routing_settings);
     void InitializeMap(const json::Node& render_settings);
     std::vector<json::Node> Process();
-    
+    void BuildGraph();
 private:
     TransportCatalogue& catalogue_;
     std::vector<json::Node> parsed_requests_;
     MapRenderer map_;
+    TransportRouter ts_router_;
+    graph::Router<double>* router_ = nullptr;
     json::Node ProcessBusRequest(int request_id, const std::string& bus_name)const;
     json::Node ProcessStopRequest(int request_id, const std::string& stop_name)const;
+    json::Node ProcessRouteRequest(int request_id, const std::string& from, const std::string& to)const;
     json::Node ProcessMapRequest(int request_id);
+    
 };
 
 
