@@ -5,15 +5,17 @@ TransportRouter::TransportRouter(const TransportCatalogue& catalogue, const std:
 }*/
 #include <iostream>
 #include <algorithm>
-
-void TransportRouter::BuildGraph(const TransportCatalogue *catalogue)
+TransportRouter::TransportRouter(const TransportCatalogue& catalogue){
+    BuildGraph(catalogue);
+}
+void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
 {
-    catalogue_ = std::move(catalogue);
-    const auto& all_stops = catalogue_->GetStops();
-    const std::deque<Bus> all_buses = catalogue_->GetSortedRoutes();
+    
+    const auto& all_stops = catalogue.GetStops();
+    const std::deque<Bus> all_buses = catalogue.GetSortedRoutes();
     //std::map<std::string, graph::VertexId> stop_ids;
     size_t vertexId = 0;
-    graph::DirectedWeightedGraph<double> temp_graph(catalogue_->GetStopsCount() * 2);
+    graph::DirectedWeightedGraph<double> temp_graph(catalogue.GetStopsCount() * 2);
     stop_names_.resize(all_stops.size() * 2);
     for(const auto& stop: all_stops){
         
@@ -23,7 +25,7 @@ void TransportRouter::BuildGraph(const TransportCatalogue *catalogue)
                             0,
                             vertexId,
                             ++vertexId,
-                            catalogue_->GetWaitTime()});
+                            catalogue.GetWaitTime()});
                          
         ++vertexId;
     }
@@ -36,7 +38,7 @@ void TransportRouter::BuildGraph(const TransportCatalogue *catalogue)
     std::for_each(
         all_buses.begin(),
         all_buses.end(),
-        [&temp_graph, this](const auto& item)
+        [&temp_graph,catalogue, this](const auto& item)
         {
 
             const auto& bus_ptr = item;
@@ -50,7 +52,7 @@ void TransportRouter::BuildGraph(const TransportCatalogue *catalogue)
                     const Stop* stop_from = stops[i];
                     const Stop* stop_to = stops[j];
                     
-                   std::optional<double> distance = catalogue_->GetDistance(stops[j-1], stop_to);
+                   std::optional<double> distance = catalogue.GetDistance(stops[j-1], stop_to);
                    
                    if(distance.has_value()){
                         graph::VertexId departureId = std::distance(stop_names_.begin(),

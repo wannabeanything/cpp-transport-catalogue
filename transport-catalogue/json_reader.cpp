@@ -183,8 +183,8 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
         .Build();
     }
     graph::VertexId fromId, toId;
-    const graph::DirectedWeightedGraph<double>& const_graph = ts_router_.GetGraph();
-    const auto& stops_number = ts_router_.GetStopsNumber();
+    const graph::DirectedWeightedGraph<double>& const_graph = ts_router_->GetGraph();
+    const auto& stops_number = ts_router_->GetStopsNumber();
 
     /*
     graph::VertexId departureId = std::distance(stop_names_.begin(),
@@ -273,8 +273,8 @@ json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
 
 void StatRequestsHandler::BuildGraph(){
     
-    ts_router_.BuildGraph(&catalogue_);
-    router_ = new graph::Router<double>(ts_router_.GetGraph());
+    ts_router_ = new TransportRouter(catalogue_);
+    router_ = new graph::Router<double>(ts_router_->GetGraph());
 }
 
 std::vector<json::Node> StatRequestsHandler::Process(){
