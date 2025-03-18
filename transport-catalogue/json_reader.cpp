@@ -152,7 +152,7 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
     
     
     
-    const auto& route = ts_router_->GetRouter()->BuildRoute(fromId, toId);
+    const auto& route = ts_router_->BuildRoute(fromId, toId);
     
     if(route.has_value()){
         double total_time = 0.0;
