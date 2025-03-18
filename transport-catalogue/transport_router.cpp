@@ -1,25 +1,24 @@
 #include "transport_router.h"
-/*
-TransportRouter::TransportRouter(const TransportCatalogue& catalogue, const std::string& from, const std::string& to):catalogue_(catalogue){
-    TransportRouter::BuildGraph(from, to);
-}*/
+
 #include <iostream>
 #include <algorithm>
-TransportRouter::TransportRouter(const TransportCatalogue& catalogue){
+TransportRouter::TransportRouter(const TransportCatalogue& catalogue)
+{
     BuildGraph(catalogue);
 }
 void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
 {
     
+    
     const auto& all_stops = catalogue.GetStops();
     const std::deque<Bus> all_buses = catalogue.GetSortedRoutes();
-    //std::map<std::string, graph::VertexId> stop_ids;
+    
     size_t vertexId = 0;
     graph::DirectedWeightedGraph<double> temp_graph(catalogue.GetStopsCount() * 2);
     stop_names_.resize(all_stops.size() * 2);
     for(const auto& stop: all_stops){
         
-        //stop_ids[stop->name] = vertexId;
+        
         stop_names_[vertexId] = stop.name;   
         temp_graph.AddEdge({stop.name,
                             0,
@@ -29,16 +28,11 @@ void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
                          
         ++vertexId;
     }
-    //stop_ids_ = std::move(stop_ids);
-    
-    
-
-
     
     std::for_each(
         all_buses.begin(),
         all_buses.end(),
-        [&temp_graph,catalogue, this](const auto& item)
+        [&temp_graph,&catalogue, this](const auto& item)
         {
 
             const auto& bus_ptr = item;
@@ -81,13 +75,11 @@ void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
 
     
     graph_ = std::move(temp_graph);
+    router_ = new graph::Router(graph_);
+    
 }
 const graph::DirectedWeightedGraph<double> &TransportRouter::GetGraph() const
 {
-    
-    
-    
-    
     return graph_;
 }
 
@@ -99,16 +91,4 @@ const std::vector<std::string>& TransportRouter::GetStopsNumber()const{
 
 
 
-/*
-const std::map<std::string, graph::VertexId>& TransportRouter::GetStopsNumber() const
-{
-    
-    return stop_ids_;
-}*/
-/*
-graph::VertexId TransportRouter::GetIdFrom()const{
-    return from_;
-}
-graph::VertexId TransportRouter::GetIdTo()const{
-    return to_;
-}*/
+

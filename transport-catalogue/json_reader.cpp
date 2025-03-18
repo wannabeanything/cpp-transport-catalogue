@@ -75,17 +75,7 @@ void StatRequestsHandler::InitializeMap(const json::Node& render_settings){
 json::Node StatRequestsHandler::ProcessBusRequest(int request_id, const std::string& bus_name) const{
     auto bus_info = catalogue_.GetBusInfo(bus_name);
     if (bus_info) {
-        /*
-        return json::Node{
-            std::map<std::string, json::Node>{
-                {"request_id", request_id},
-                {"stop_count", bus_info->stop_count},
-                {"unique_stop_count", bus_info->unique_stops},
-                {"route_length", bus_info->route_length},
-                {"curvature", bus_info->curvature}
-            }
-        };
-        */
+        
        return json::Builder{}.StartDict()
        .Key("request_id").Value(request_id)
        .Key("stop_count").Value(bus_info->stop_count)
@@ -94,12 +84,7 @@ json::Node StatRequestsHandler::ProcessBusRequest(int request_id, const std::str
        .Key("curvature").Value(bus_info->curvature)
        .EndDict().Build();
     } else {
-        /*
-        return json::Node{
-            std::map<std::string, json::Node>{
-            {"request_id", request_id},
-            {"error_message", "not found"s}}
-        };*/
+        
         return json::Builder{}.StartDict()
         .Key("request_id").Value(request_id)
         .Key("error_message").Value("not found")
@@ -110,18 +95,7 @@ json::Node StatRequestsHandler::ProcessBusRequest(int request_id, const std::str
 json::Node StatRequestsHandler::ProcessStopRequest(int request_id, const std::string& stop_name) const {
     const auto* buses_for_stop = catalogue_.GetBusesForStop(stop_name);
     if (buses_for_stop) {
-        /*
-        json::Array ar;
-        for (const auto bus_name : *buses_for_stop){
-            ar.push_back(std::string(bus_name));
-        }*/
-        /*
-        return json::Node{
-            std::map<std::string, json::Node>{
-                {"buses", ar},
-                {"request_id", request_id}
-            }
-        };*/
+        
         auto builder = json::Builder{};
         builder.StartDict()
         .Key("buses").StartArray();
@@ -131,34 +105,17 @@ json::Node StatRequestsHandler::ProcessStopRequest(int request_id, const std::st
         return builder.EndArray()
         .Key("request_id").Value(request_id)
         .EndDict().Build();
-        /*
-        return json::Builder{}.StartDict()
-        .Key("buses").Value(ar)
-        .Key("request_id").Value(request_id)
-        .EndDict().Build();
-        */
+        
     }
     else if(catalogue_.FindStop(stop_name)!=nullptr){
-        /*
-        return json::Node{
-            std::map<std::string, json::Node>{
-                {"buses", json::Node(json::Array())},
-                {"request_id", request_id}
-            }
-        };*/
+        
         return json::Builder{}.StartDict()
         .Key("buses").StartArray().EndArray()
         .Key("request_id").Value(request_id)
         .EndDict().Build();
 
     }
-    /*
-    return json::Node{
-        std::map<std::string, json::Node>{
-            {"request_id", request_id},
-            {"error_message", "not found"s}
-        }
-    };*/
+    
     return json::Builder{}.StartDict()
     .Key("request_id").Value(request_id)
     .Key("error_message").Value("not found")
@@ -186,21 +143,16 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
     const graph::DirectedWeightedGraph<double>& const_graph = ts_router_->GetGraph();
     const auto& stops_number = ts_router_->GetStopsNumber();
 
-    /*
-    graph::VertexId departureId = std::distance(stop_names_.begin(),
-                        std::find(stop_names_.begin(), stop_names_.end(), stop_from->name));
     
-    */
     fromId = std::distance(stops_number.begin(),
             std::find(stops_number.begin(), stops_number.end(), from));
     toId = std::distance(stops_number.begin(),
             std::find(stops_number.begin(), stops_number.end(), to));        
             
-    //fromId = stops_number.at(from);
-    //toId = stops_number.at(to);
-
-    const auto& route = router_->BuildRoute(fromId, toId);
-
+    
+    
+    
+    const auto& route = ts_router_->GetRouter()->BuildRoute(fromId, toId);
     
     if(route.has_value()){
         double total_time = 0.0;
@@ -257,13 +209,7 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
 json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
     std::ostringstream oss;
     map_.DrawMap(oss);
-    /*
-    return json::Node{
-        std::map<std::string, json::Node>{
-            {"map", oss.str()},
-            {"request_id", request_id}
-        }
-    };*/
+    
     
     return json::Builder{}.StartDict()
     .Key("map").Value(oss.str())
@@ -274,7 +220,7 @@ json::Node StatRequestsHandler::ProcessMapRequest(int request_id){
 void StatRequestsHandler::BuildGraph(){
     
     ts_router_ = new TransportRouter(catalogue_);
-    router_ = new graph::Router<double>(ts_router_->GetGraph());
+    
 }
 
 std::vector<json::Node> StatRequestsHandler::Process(){

@@ -34,7 +34,7 @@ void TransportCatalogue::SetDistance() {
 void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
     Bus bus{name, {}, is_roundtrip};
 
-    // Step 1: Add stops for a roundtrip
+    
     if (is_roundtrip) {
         for (const auto& stop_name : stop_names) {
             const Stop* stop = FindStop(stop_name);
@@ -43,15 +43,7 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
                 bus_to_stops_[name].insert(stop->name);
                 stop_to_buses_[stop->name].insert(name);
             }
-        }/*
-        if (!stop_names.empty()) {
-            const Stop* first_stop = FindStop(stop_names.front());
-            if (first_stop) {
-                bus.stops.push_back(first_stop);
-                bus_to_stops_[name].insert(first_stop->name);
-                stop_to_buses_[first_stop->name].insert(name);
-            }
-        }*/
+        }
     } 
     
     else {
@@ -83,10 +75,7 @@ void TransportCatalogue::SetVelocityAndWaitTime(double velocity,double wait_time
         bus.wait_time = wait_time;
     }
 }
-/*
-const double TransportCatalogue::GetVelocity()const{
-    return buses_[0].velocity;
-}*/
+
 double TransportCatalogue::GetWaitTime()const{
     return buses_[0].wait_time;
 }

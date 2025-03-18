@@ -22,7 +22,7 @@ public:
     void AddBus(const std::string& name, const std::vector<std::string>& stop_names, bool is_roundtrip);
     void SetVelocityAndWaitTime(double velocity, double wait_time);
     size_t GetStopsCount() const;
-    //const double GetVelocity()const;
+    
     double GetWaitTime()const;
     void AddDistance(const std::string& from_stop_name, const std::string& to_stop_name, int distance);
     void SetDistance();
