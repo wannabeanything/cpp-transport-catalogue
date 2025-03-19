@@ -4,7 +4,7 @@
 
 #include "log_duration.h"
 int main() {
-    //LOG_DURATION("CODE");
+    LOG_DURATION("CODE");
     freopen("text.txt","r",stdin);
     
     

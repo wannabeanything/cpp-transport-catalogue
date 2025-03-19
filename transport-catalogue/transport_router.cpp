@@ -78,6 +78,24 @@ void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
     router_ = new graph::Router(graph_);
     
 }
+
+std::optional<graph::Router<double>::RouteInfo> TransportRouter::BuildRoute(const std::string& from, const std::string to)const{
+    
+    graph::VertexId fromId, toId;
+    
+    
+    
+    
+    fromId = std::distance(stop_names_.begin(),
+            std::find(stop_names_.begin(), stop_names_.end(), from));
+    toId = std::distance(stop_names_.begin(),
+            std::find(stop_names_.begin(), stop_names_.end(), to));
+    const auto& route = router_->BuildRoute(fromId, toId);
+    return route;        
+            
+    
+    
+}
 const graph::DirectedWeightedGraph<double> &TransportRouter::GetGraph() const
 {
     return graph_;

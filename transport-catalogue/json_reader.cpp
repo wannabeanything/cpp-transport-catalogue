@@ -139,21 +139,10 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
         .EndDict()
         .Build();
     }
-    graph::VertexId fromId, toId;
-    const graph::DirectedWeightedGraph<double>& const_graph = ts_router_->GetGraph();
-    const auto& stops_number = ts_router_->GetStopsNumber();
-
-    
-    fromId = std::distance(stops_number.begin(),
-            std::find(stops_number.begin(), stops_number.end(), from));
-    toId = std::distance(stops_number.begin(),
-            std::find(stops_number.begin(), stops_number.end(), to));        
-            
     
     
-    
-    const auto& route = ts_router_->BuildRoute(fromId, toId);
-    
+    const auto& route = ts_router_->BuildRoute(from, to);
+    const graph::DirectedWeightedGraph<double> const_graph = ts_router_->GetGraph();
     if(route.has_value()){
         double total_time = 0.0;
         
