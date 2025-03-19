@@ -2,6 +2,7 @@
 
 #include "transport_catalogue.h"
 #include "router.h"
+#include "json.h"
 #include "graph.h"
 #include <map>
 
@@ -12,7 +13,7 @@ public:
     TransportRouter(const TransportCatalogue& catalogue);
     
     const graph::DirectedWeightedGraph<double>& GetGraph() const;
-    std::optional<graph::Router<double>::RouteInfo> BuildRoute(const std::string& from, const std::string to)const;
+    std::optional<json::Node> BuildRoute(const std::string& from, const std::string to, int request_id)const;
     
 private:
     void BuildGraph(const TransportCatalogue& catalogue);

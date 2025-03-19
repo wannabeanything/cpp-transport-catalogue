@@ -1,5 +1,5 @@
 #include "transport_router.h"
-
+#include "json_builder.h"
 #include <iostream>
 #include <algorithm>
 TransportRouter::TransportRouter(const TransportCatalogue& catalogue)
@@ -79,22 +79,58 @@ void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
     
 }
 
-std::optional<graph::Router<double>::RouteInfo> TransportRouter::BuildRoute(const std::string& from, const std::string to)const{
+std::optional<json::Node> TransportRouter::BuildRoute(const std::string& from, const std::string to, int request_id)const{
     
     graph::VertexId fromId, toId;
-    
-    
-    
-    
     fromId = std::distance(stop_names_.begin(),
             std::find(stop_names_.begin(), stop_names_.end(), from));
     toId = std::distance(stop_names_.begin(),
             std::find(stop_names_.begin(), stop_names_.end(), to));
     const auto& route = router_->BuildRoute(fromId, toId);
-    return route;        
+    
+    if(route.has_value()){
+        double total_time = 0.0;
+        
+        
+        auto builder = json::Builder{};
+        builder.StartDict()
+        .Key("items").StartArray();
+        
+        for(const graph::EdgeId edgeId: route.value().edges){
             
-    
-    
+            graph::Edge edge = graph_.GetEdge(edgeId);
+            if(edge.span_count != 0){
+                
+                builder.StartDict()
+                .Key("bus").Value(edge.name)
+                .Key("span_count").Value(static_cast<int>(edge.span_count))
+                .Key("time").Value(edge.weight)
+                .Key("type").Value("Bus")
+                .EndDict();
+                
+            }
+            else{
+                
+                builder.StartDict()
+                .Key("stop_name").Value(edge.name)
+                .Key("time").Value(edge.weight)
+                .Key("type").Value("Wait")
+                .EndDict();
+                
+            }
+            
+            total_time+= edge.weight;
+            
+            
+        }
+        return builder.EndArray()
+            .Key("request_id").Value(request_id)
+            .Key("total_time").Value(total_time)
+            .EndDict()
+            .Build();
+        
+    }
+    return std::nullopt;
 }
 const graph::DirectedWeightedGraph<double> &TransportRouter::GetGraph() const
 {

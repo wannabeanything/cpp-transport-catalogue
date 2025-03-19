@@ -141,50 +141,9 @@ json::Node StatRequestsHandler::ProcessRouteRequest(int request_id, const std::s
     }
     
     
-    const auto& route = ts_router_->BuildRoute(from, to);
-    const graph::DirectedWeightedGraph<double> const_graph = ts_router_->GetGraph();
-    if(route.has_value()){
-        double total_time = 0.0;
-        
-        
-        auto builder = json::Builder{};
-        builder.StartDict()
-        .Key("items").StartArray();
-        
-        for(const graph::EdgeId edgeId: route.value().edges){
-            
-            graph::Edge edge = const_graph.GetEdge(edgeId);
-            if(edge.span_count != 0){
-                
-                builder.StartDict()
-                .Key("bus").Value(edge.name)
-                .Key("span_count").Value(static_cast<int>(edge.span_count))
-                .Key("time").Value(edge.weight)
-                .Key("type").Value("Bus")
-                .EndDict();
-                
-            }
-            else{
-                
-                builder.StartDict()
-                .Key("stop_name").Value(edge.name)
-                .Key("time").Value(edge.weight)
-                .Key("type").Value("Wait")
-                .EndDict();
-                
-            }
-            
-            total_time+= edge.weight;
-            
-        }
-        
-        
-        return builder.EndArray()
-        .Key("request_id").Value(request_id)
-        .Key("total_time").Value(total_time)
-        .EndDict()
-        .Build();
-        
+    const auto& builder = ts_router_->BuildRoute(from, to, request_id);
+    if(builder.has_value()){
+        return builder.value();
     }
     
 
