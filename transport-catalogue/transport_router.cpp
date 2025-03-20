@@ -79,7 +79,7 @@ void TransportRouter::BuildGraph(const TransportCatalogue &catalogue)
     
 }
 
-std::optional<json::Node> TransportRouter::BuildRoute(const std::string& from, const std::string to, int request_id)const{
+TransportRouter::builder TransportRouter::BuildRoute(const std::string& from, const std::string to, int request_id)const{
     
     graph::VertexId fromId, toId;
     fromId = std::distance(stop_names_.begin(),

@@ -10,10 +10,11 @@
 
 class TransportRouter{
 public:
+    using builder = std::optional<json::Node>;
     TransportRouter(const TransportCatalogue& catalogue);
     
     const graph::DirectedWeightedGraph<double>& GetGraph() const;
-    std::optional<json::Node> BuildRoute(const std::string& from, const std::string to, int request_id)const;
+    builder BuildRoute(const std::string& from, const std::string to, int request_id)const;
     
 private:
     void BuildGraph(const TransportCatalogue& catalogue);
